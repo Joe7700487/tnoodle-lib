@@ -17,7 +17,7 @@ object Languages {
     fun Project.configureJava() {
         configure<JavaPluginExtension> {
             toolchain {
-                languageVersion.set(JavaLanguageVersion.of(11))
+                languageVersion.set(JavaLanguageVersion.of(17))
             }
 
             sourceCompatibility = JavaVersion.VERSION_1_8

@@ -67,7 +67,7 @@ public class Search {
 	FullCube[] arr2 = new FullCube[PHASE2_SOLUTIONS];
 	int arr2idx = 0;
 
-	public boolean inverse_solution = true;
+	public boolean inverse_solution = false;
 	public boolean with_rotation = false;
 
 	public Search() {
