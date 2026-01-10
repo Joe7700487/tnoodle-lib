@@ -18,13 +18,66 @@ public class App {
 
     public static void main(String[] args) {
         try {
-            System.out.println("=== TNoodle Threephase 4x4x4 Solver ===");
-            System.out.println("Initializing threephase solver...");
+            boolean batchMode = args.length > 0 && "--batch".equals(args[0]);
+
+            if (!batchMode) {
+                System.out.println("=== TNoodle Threephase 4x4x4 Solver ===");
+                System.out.println("Initializing threephase solver...");
+            }
+
             long initStart = System.currentTimeMillis();
             Search.init();
             long initTime = System.currentTimeMillis() - initStart;
-            System.out.println("Initialization complete! (" + initTime + " ms)\n");
 
+            if (!batchMode) {
+                System.out.println("Initialization complete! (" + initTime + " ms)\n");
+            }
+
+            if (batchMode) {
+                // Batch mode: minimal output suitable for calling from scripts
+                String input;
+                if (args.length <= 1) {
+                    // If present, read from environment variable TNOODLE_INPUT (easier to pass via batch wrapper)
+                    String envInput = System.getenv("TNOODLE_INPUT");
+                    if (envInput != null && envInput.length() > 0) {
+                        input = envInput.trim();
+                    } else {
+                        // Read input from stdin if no argument provided after --batch and env var not set
+                        java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
+                        input = br.readLine();
+                        if (input == null) input = "";
+                    }
+                } else {
+                    // Join remaining args as the scramble / facelet string
+                    input = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length)).trim();
+                }
+
+                if (input.length() == 0) {
+                    System.err.println("No input provided to batch mode");
+                    System.exit(2);
+                }
+
+                try {
+                    Search searcher = new Search();
+                    String solution;
+                    if (input.length() == 96) {
+                        // Facelet string
+                        solution = searcher.solution(input);
+                    } else {
+                        // Treat as a move scramble
+                        solution = searcher.solve(input);
+                    }
+                    // Print only the solution itself to stdout for easy parsing by callers
+                    System.out.println(solution);
+                    System.exit(0);
+                } catch (Exception e) {
+                    logger.error("Error solving cube in batch mode", e);
+                    System.err.println("ERROR: " + e.getMessage());
+                    System.exit(3);
+                }
+            }
+
+            // Interactive / CLI mode (existing behavior)
             if (args.length == 0) {
                 // Default: solve 1 random cube
                 solveRandomCubes(1);

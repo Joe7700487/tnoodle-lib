@@ -11,6 +11,7 @@ plugins {
     `maven-publish`
     signing
     application
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 configureJava()
@@ -28,4 +29,19 @@ configureJUnit5()
 
 application {
     mainClass.set("cs.threephase.App")
+}
+
+// Create an executable "fat" JAR containing all dependencies
+tasks.withType(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class.java) {
+    archiveBaseName.set("threephase-solver")
+    // No classifier so archive will be like threephase-solver-<version>.jar
+    archiveClassifier.set("")
+    manifest {
+        attributes("Main-Class" to "cs.threephase.App")
+    }
+}
+
+// Make the regular build produce the fat JAR
+tasks.named("build") {
+    dependsOn("shadowJar")
 }
